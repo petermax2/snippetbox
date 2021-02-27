@@ -7,6 +7,12 @@ import (
 	"os"
 )
 
+// this struct holds application wide dependencies
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	// app configuration - cmd line arguments + environment variables (if any)
 	serverAddress := flag.String("address", ":8080", "Network address (and port) of the server")
@@ -16,11 +22,17 @@ func main() {
 	infoLog := log.New(os.Stdout, "[INFO]  ", log.Ldate|log.Ltime|log.Lshortfile)
 	errorLog := log.New(os.Stderr, "[ERROR] ", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// initialize the application instance
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
 	// HTTP message routing
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet", app.showSnippet)
+	mux.HandleFunc("/snippet/create", app.createSnippet)
 
 	// file server for static files
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
