@@ -6,17 +6,19 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/jackc/pgx"
+	"gorm.io/gorm"
 )
 
 // this struct holds application wide dependencies
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	db       *gorm.DB
 }
 
 func main() {
-	serverAddress := flag.String("address", ":8080", "Network address (and port) of the server")
+	dbDSN := flag.String("dsn", DEFAULT_DSN, "DSN of the PostgreSQL database to connect to")
+	serverAddress := flag.String("address", ":8080", "Network address (and port) of the Snippetbox web server")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "[INFO]  ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -27,19 +29,7 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	dbConfig := &pgx.ConnConfig{
-		Host:     "localhost",
-		Port:     8082,
-		Database: "snippetbox",
-		User:     "web",
-		Password: "password",
-	}
-
-	conn, err := pgx.Connect(*dbConfig)
-	if err != nil {
-		errorLog.Fatal(err)
-	}
-	defer conn.Close()
+	app.connectToDB(*dbDSN)
 
 	server := &http.Server{
 		Addr:     *serverAddress,
@@ -48,6 +38,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *serverAddress)
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 	errorLog.Fatal(err)
 }
