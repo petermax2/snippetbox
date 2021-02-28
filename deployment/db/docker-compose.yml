@@ -5,9 +5,11 @@ services:
     image: postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres-dev
+      POSTGRES_PASSWORD: password
     ports:
-      - 5432:8082
+      - 8082:5432
+    volumes:
+      - snippetbox-postgres:/var/lib/postgresql/data
 
   snippetbox-pgadmin:
     image: dpage/pgadmin4
@@ -17,5 +19,11 @@ services:
       PGADMIN_LISTEN_PORT: 80
     ports:
       - 8081:80
+    volumes:
+        - snippetbox-pgadmin:/var/lib/pgadmin
     depends_on:
       - snippetbox-db
+
+volumes:
+  snippetbox-postgres:
+  snippetbox-pgadmin:

@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/jackc/pgx"
 )
 
 // this struct holds application wide dependencies
@@ -25,6 +27,20 @@ func main() {
 		infoLog:  infoLog,
 	}
 
+	dbConfig := &pgx.ConnConfig{
+		Host:     "localhost",
+		Port:     8082,
+		Database: "snippetbox",
+		User:     "web",
+		Password: "password",
+	}
+
+	conn, err := pgx.Connect(*dbConfig)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer conn.Close()
+
 	server := &http.Server{
 		Addr:     *serverAddress,
 		ErrorLog: errorLog,
@@ -32,6 +48,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *serverAddress)
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	errorLog.Fatal(err)
 }
