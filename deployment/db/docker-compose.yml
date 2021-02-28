@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  snippetbox-db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres-dev
+    ports:
+      - 5432:8082
+
+  snippetbox-pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nowhere.com
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - 8081:80
+    depends_on:
+      - snippetbox-db
