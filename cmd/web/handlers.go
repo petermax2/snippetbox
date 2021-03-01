@@ -35,7 +35,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
@@ -52,7 +52,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(snippet)
 }
 
-func (app *application) getLatestSnippets(w http.ResponseWriter, r *http.Request) {
+func (app *application) apiGetLatestSnippets(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.clientError(w, http.StatusInternalServerError)
@@ -63,7 +63,7 @@ func (app *application) getLatestSnippets(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(snippets)
 }
 
-func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) apiCreateSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		app.clientError(w, http.StatusMethodNotAllowed)
