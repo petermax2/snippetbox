@@ -25,6 +25,6 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 
 func (m *SnippetModel) Latest() ([]*Snippet, error) {
 	var snippets []*Snippet
-	tx := m.DB.Limit(10).Order("id DESC").Find(&snippets)
+	tx := m.DB.Limit(10).Order("id DESC").Find(&snippets, "expires > CURRENT_TIMESTAMP")
 	return snippets, tx.Error
 }
