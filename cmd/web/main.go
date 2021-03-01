@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"os"
 
-	"gorm.io/gorm"
+	"nirpet.at/snippetbox/pkg/models"
 )
 
 // this struct holds application wide dependencies
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
-	db       *gorm.DB
+	snippets *models.SnippetModel
 }
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	app.connectToDB(*dbDSN)
+	app.initModels(openDB(*dbDSN, errorLog))
 
 	server := &http.Server{
 		Addr:     *serverAddress,
@@ -37,7 +37,7 @@ func main() {
 		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", *serverAddress)
+	infoLog.Printf("Starting web server on %s", *serverAddress)
 	err := server.ListenAndServe()
 	errorLog.Fatal(err)
 }

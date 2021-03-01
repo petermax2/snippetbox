@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"nirpet.at/snippetbox/pkg/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +42,25 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Serving you the snippet with ID %d...\n", id)
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(snippet)
+}
+
+func (app *application) getLatestSnippets(w http.ResponseWriter, r *http.Request) {
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.clientError(w, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(snippets)
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +69,20 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		app.clientError(w, http.StatusUnsupportedMediaType)
+		return
+	}
 
-	fmt.Fprintln(w, "Creating new snippet...")
+	var snippet models.Snippet
+	err := json.NewDecoder(r.Body).Decode(&snippet)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	err = app.snippets.Insert(&snippet)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(snippet)
 }
