@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -30,11 +31,19 @@ func (app *application) renderHtml(w http.ResponseWriter, r *http.Request, name 
 
 	buffer := new(bytes.Buffer)
 
-	err := ts.Execute(buffer, td)
+	err := ts.Execute(buffer, app.addDefaultData(td, r))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	buffer.WriteTo(w)
+}
+
+func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+	td.CurrentYear = time.Now().Year()
+	return td
 }
