@@ -9,13 +9,20 @@ import (
 	"nirpet.at/snippetbox/pkg/models"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
+func (app *application) htmlShowHome(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		app.notFound(w)
 		return
 	}
 
-	// list of page- and layout templates
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	data := &templateData{Snippets: snippets}
+
 	files := []string{
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
@@ -28,14 +35,14 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.Execute(w, nil)
+	err = ts.Execute(w, data)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 }
 
-func (app *application) httpShowSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)

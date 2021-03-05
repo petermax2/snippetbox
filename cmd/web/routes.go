@@ -7,8 +7,8 @@ func (app *application) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// register HTML routes
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet", app.httpShowSnippet)
+	mux.HandleFunc("/", app.htmlShowHome)
+	mux.HandleFunc("/snippet", app.htmlShowSnippet)
 
 	// register API routes (JSON)
 	mux.HandleFunc("/api/snippet", app.apiGetSnippet)
