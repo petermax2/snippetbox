@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -21,25 +20,7 @@ func (app *application) htmlShowHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateData{Snippets: snippets}
-
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.renderHtml(w, r, "home.page.tmpl", &templateData{Snippets: snippets})
 }
 
 func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) {
@@ -59,25 +40,7 @@ func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	data := &templateData{Snippet: snippet}
-
-	files := []string{
-		"./ui/html/show.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.renderHtml(w, r, "show.page.tmpl", &templateData{Snippet: snippet})
 }
 
 func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {

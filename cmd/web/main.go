@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -11,9 +12,10 @@ import (
 
 // this struct holds application wide dependencies
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *models.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -24,9 +26,15 @@ func main() {
 	infoLog := log.New(os.Stdout, "[INFO]  ", log.Ldate|log.Ltime|log.Lshortfile)
 	errorLog := log.New(os.Stderr, "[ERROR] ", log.Ldate|log.Ltime|log.Lshortfile)
 
+	templateCache, err := newTemplateCache("./ui/html")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		templateCache: templateCache,
 	}
 
 	app.initModels(openDB(*dbDSN, errorLog))
@@ -38,6 +46,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting web server on %s", *serverAddress)
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	errorLog.Fatal(err)
 }
