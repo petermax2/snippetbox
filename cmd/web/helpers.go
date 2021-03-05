@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -27,9 +28,13 @@ func (app *application) renderHtml(w http.ResponseWriter, r *http.Request, name 
 		return
 	}
 
-	err := ts.Execute(w, td)
+	buffer := new(bytes.Buffer)
+
+	err := ts.Execute(buffer, td)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
+
+	buffer.WriteTo(w)
 }
