@@ -1,0 +1,96 @@
+# Generation of Kubernetes YAML is still under development!
+#
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-3.0.1
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2021-03-05T20:43:31Z"
+  labels:
+    app: snippetbox-db
+  name: snippetbox-db
+spec:
+  containers:
+  - command:
+    - /entrypoint.sh
+    env:
+    - name: container
+      value: podman
+    - name: PYTHONPATH
+      value: /pgadmin4
+    - name: PGADMIN_DEFAULT_EMAIL
+      value: peter@nirpet.at
+    - name: PGADMIN_DEFAULT_PASSWORD
+      value: password
+    image: docker.io/dpage/pgadmin4:latest
+    name: snippetbox-pgadmin
+    ports:
+    - containerPort: 80
+      hostPort: 8081
+      protocol: TCP
+    - containerPort: 5432
+      hostPort: 8082
+      protocol: TCP
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+        - CAP_AUDIT_WRITE
+      privileged: false
+      readOnlyRootFilesystem: false
+      runAsGroup: 5050
+      runAsUser: 5050
+      seLinuxOptions: {}
+    workingDir: /pgadmin4
+  - args:
+    - postgres
+    command:
+    - docker-entrypoint.sh
+    env:
+    - name: container
+      value: podman
+    - name: PG_VERSION
+      value: 13.2-1.pgdg100+1
+    - name: PG_MAJOR
+      value: "13"
+    - name: PGDATA
+      value: /var/lib/postgresql/data
+    - name: GOSU_VERSION
+      value: "1.12"
+    - name: LANG
+      value: en_US.utf8
+    - name: POSTGRES_USER
+      value: postgres
+    - name: POSTGRES_PASSWORD
+      value: password
+    image: docker.io/library/postgres:latest
+    name: snippetbox-postgres
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+        - CAP_AUDIT_WRITE
+      privileged: false
+      readOnlyRootFilesystem: false
+      seLinuxOptions: {}
+    volumeMounts:
+    - mountPath: /var/lib/postgresql/data
+      name: home-pnirschl-.snippetbox-db
+    workingDir: /
+  dnsConfig: {}
+  restartPolicy: Never
+  volumes:
+  - hostPath:
+      path: /home/pnirschl/.snippetbox-db
+      type: Directory
+    name: home-pnirschl-.snippetbox-db
+status: {}
+
