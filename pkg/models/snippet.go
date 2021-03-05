@@ -19,7 +19,11 @@ func (m *SnippetModel) Insert(snippet *Snippet) error {
 
 func (m *SnippetModel) Get(id int) (*Snippet, error) {
 	snippet := &Snippet{}
-	tx := m.DB.First(&snippet, id)
+
+	tx := m.DB.Limit(1).Find(&snippet, id)
+	if tx.RowsAffected < 1 && tx.Error == nil {
+		return nil, ErrNoRecord
+	}
 	return snippet, tx.Error
 }
 
