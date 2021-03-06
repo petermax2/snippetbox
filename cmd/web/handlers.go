@@ -100,6 +100,26 @@ func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", snippet.ID), http.StatusSeeOther)
 }
 
+func (app *application) htmlSignupUserForm(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) htmlSignupUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) htmlLoginUserForm(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) htmlLoginUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) htmlLogoutUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {
 	urlParams := mux.Vars(r)
 	id, err := strconv.Atoi(urlParams["id"])
