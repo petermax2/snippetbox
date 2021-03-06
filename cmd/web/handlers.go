@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"nirpet.at/snippetbox/pkg/models"
@@ -50,7 +52,31 @@ func (app *application) htmlCreateSnippetForm(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
+	expiresInDays, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil || expiresInDays < 1 || expiresInDays > 365 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	snippet := &models.Snippet{
+		Title:   r.PostForm.Get("title"),
+		Content: r.PostForm.Get("content"),
+		Expires: time.Now().AddDate(0, 0, expiresInDays),
+	}
+
+	err = app.snippets.Insert(snippet)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", snippet.ID), http.StatusSeeOther)
 }
 
 func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {
