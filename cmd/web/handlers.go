@@ -9,7 +9,7 @@ import (
 	"nirpet.at/snippetbox/pkg/models"
 )
 
-func (app *application) htmlShowHome(w http.ResponseWriter, r *http.Request) {
+func (app *application) htmlHome(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		app.notFound(w)
 		return
@@ -45,6 +45,14 @@ func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) 
 	app.renderHtml(w, r, "show.page.tmpl", &templateData{Snippet: snippet})
 }
 
+func (app *application) htmlCreateSnippetForm(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {
 	urlParams := mux.Vars(r)
 	id, err := strconv.Atoi(urlParams["id"])
@@ -75,11 +83,6 @@ func (app *application) apiGetLatestSnippets(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) apiCreateSnippet(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
 	if r.Header.Get("Content-Type") != "application/json" {
 		app.clientError(w, http.StatusUnsupportedMediaType)
 		return

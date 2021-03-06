@@ -15,8 +15,10 @@ func (app *application) routes() http.Handler {
 	router := mux.NewRouter().StrictSlash(true)
 
 	// register HTML routes
-	router.HandleFunc("/", app.htmlShowHome).Methods("GET")
+	router.HandleFunc("/", app.htmlHome).Methods("GET")
 	router.HandleFunc("/snippet/{id}", app.htmlShowSnippet).Methods("GET")
+	router.HandleFunc("/snippet/create", app.htmlCreateSnippetForm).Methods("GET")
+	router.HandleFunc("/snippet/create", app.htmlCreateSnippet).Methods("POST")
 
 	// register API routes (JSON)
 	router.HandleFunc("/api/snippet/{id}", app.apiGetSnippet).Methods("GET")
