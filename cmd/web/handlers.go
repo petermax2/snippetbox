@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -101,11 +102,51 @@ func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) htmlSignupUserForm(w http.ResponseWriter, r *http.Request) {
-
+	app.renderHtml(w, r, "signup.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) htmlSignupUser(w http.ResponseWriter, r *http.Request) {
+	// parse HTML form data
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
+	// user input validation
+	form := forms.New(r.PostForm)
+	form.Required("name", "email", "password")
+	form.MaxLength("name", 255)
+	form.MaxLength("email", 255)
+	form.MatchesPattern("email", forms.EmailRX)
+	form.MinLength("password", 10)
+
+	if !form.Valid() {
+		app.renderHtml(w, r, "signup.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	// save user to DB
+	user := &models.User{
+		Name:     form.Get("name"),
+		Email:    form.Get("email"),
+		Password: form.Get("password"),
+	}
+	err = app.users.Insert(user)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.Errors.Add("email", "The e-maill address is already in use")
+			app.renderHtml(w, r, "signup.page.tmpl", &templateData{Form: form})
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	app.session.Put(r, "flash", "Your signup was successful. Please log in.")
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
 func (app *application) htmlLoginUserForm(w http.ResponseWriter, r *http.Request) {

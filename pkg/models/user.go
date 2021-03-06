@@ -1,6 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"strings"
+
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
 
 type UserModel struct {
 	DB *gorm.DB
@@ -11,7 +16,18 @@ func (m *UserModel) Migrate() error {
 }
 
 func (m *UserModel) Insert(user *User) error {
-	return nil
+	// use bcrypt to store the password in hashed form
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 13)
+	if err != nil {
+		return err
+	}
+	user.Password = string(passwordHash)
+
+	tx := m.DB.Create(user)
+	if strings.Contains(tx.Error.Error(), "duplicate key") && strings.Contains(tx.Error.Error(), "email") {
+		return ErrDuplicateEmail
+	}
+	return tx.Error
 }
 
 func (m *UserModel) Authenticate(email, password string) (int, error) {
