@@ -25,6 +25,9 @@ func main() {
 	dbDSN := flag.String("dsn", DEFAULT_DSN, "DSN of the PostgreSQL database to connect to")
 	serverAddress := flag.String("address", ":8080", "Network address (and port) of the Snippetbox web server")
 	secret := flag.String("secret", "aishoifee*r?ekuk7Mee9Rahhu3juh/i", "Secret key to use for session management")
+	tlsCert := flag.String("tlsCert", "./tls/cert.pem", "Path to the TLS certificate")
+	tlsKey := flag.String("tlsKey", "./tls/key.pem", "Path to the TLS certificate key")
+	useTls := flag.Bool("tls", false, "Enable TLS (requires tlsCert and tlsKey")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "[INFO]  ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -48,12 +51,19 @@ func main() {
 	app.initModels(openDB(*dbDSN, errorLog))
 
 	server := &http.Server{
-		Addr:     *serverAddress,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:         *serverAddress,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting web server on %s", *serverAddress)
-	err = server.ListenAndServe()
+	if *useTls {
+		err = server.ListenAndServeTLS(*tlsCert, *tlsKey)
+	} else {
+		err = server.ListenAndServe()
+	}
 	errorLog.Fatal(err)
 }
