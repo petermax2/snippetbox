@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/gorilla/mux"
+	"nirpet.at/snippetbox/pkg/forms"
 	"nirpet.at/snippetbox/pkg/models"
 )
 
@@ -50,7 +49,9 @@ func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) htmlCreateSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.renderHtml(w, r, "create.page.tmpl", nil)
+	app.renderHtml(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request) {
@@ -61,47 +62,39 @@ func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-
 	// user input validation
-	validationErrors := make(map[string]string)
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	if strings.TrimSpace(title) == "" {
-		validationErrors["title"] = "This field can not be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		validationErrors["title"] = "This field is too long (maximum is 100 characters)"
-	}
-
-	if strings.TrimSpace(content) == "" {
-		validationErrors["content"] = "This field can not be blank"
-	}
-
-	expiresInDays, err := strconv.Atoi(r.PostForm.Get("expires"))
-	if err != nil || expiresInDays < 1 || expiresInDays > 365 {
-		validationErrors["expires"] = "This field must be a numeric value between 1 and 365"
-	}
-
-	if len(validationErrors) > 0 {
-		app.renderHtml(w, r, "create.page.tmpl", &templateData{
-			FormErrors: validationErrors,
-			FormData:   r.PostForm,
-		})
+	if !form.Valid() {
+		app.renderHtml(w, r, "create.page.tmpl", &templateData{Form: form})
 		return
 	}
 
-	snippet := &models.Snippet{
-		Title:   r.PostForm.Get("title"),
-		Content: r.PostForm.Get("content"),
-		Expires: time.Now().AddDate(0, 0, expiresInDays),
+	// convert expires to integer
+	expires, err := strconv.Atoi(form.Get("expires"))
+	if err != nil {
+		app.serverError(w, err)
+		return
 	}
 
+	// create new snippet from form data
+	snippet := &models.Snippet{
+		Title:   form.Get("title"),
+		Content: form.Get("content"),
+		Expires: time.Now().AddDate(0, 0, expires),
+	}
+
+	// DB interaction - save snippet via ORM
 	err = app.snippets.Insert(snippet)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
+	// display created snippet to the user
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", snippet.ID), http.StatusSeeOther)
 }
 
