@@ -18,6 +18,7 @@ type application struct {
 	infoLog       *log.Logger
 	session       *sessions.Session
 	snippets      *models.SnippetModel
+	users         *models.UserModel
 	templateCache map[string]*template.Template
 }
 

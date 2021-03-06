@@ -8,6 +8,7 @@ import (
 )
 
 var ErrNoRecord = errors.New("models: no matching record found")
+var ErrInvalidCredentials = errors.New("models: invalid credentials")
 
 type Snippet struct {
 	gorm.Model
@@ -15,4 +16,12 @@ type Snippet struct {
 	Title     string
 	Content   string
 	Expires   time.Time `gorm:"index"`
+}
+
+type User struct {
+	gorm.Model
+	Name     string
+	Email    string `gorm:"unique"`
+	Password string
+	Active   bool
 }

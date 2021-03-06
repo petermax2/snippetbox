@@ -20,7 +20,9 @@ func openDB(dsn string, errorLog *log.Logger) *gorm.DB {
 
 func (app *application) initModels(db *gorm.DB) {
 	app.snippets = &models.SnippetModel{DB: db}
+	app.users = &models.UserModel{DB: db}
 
 	app.infoLog.Println("Starting migration of the DB model")
 	app.snippets.Migrate()
+	app.users.Migrate()
 }
