@@ -150,15 +150,39 @@ func (app *application) htmlSignupUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) htmlLoginUserForm(w http.ResponseWriter, r *http.Request) {
-
+	app.renderHtml(w, r, "login.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) htmlLoginUser(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
+	form := forms.New(r.PostForm)
+	id, err := app.users.Authenticate(form.Get("email"), form.Get("password"))
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.Errors.Add("generic", "Your credentials are incorrect")
+			app.renderHtml(w, r, "login.page.tmpl", &templateData{Form: form})
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	app.session.Put(r, "authenticatedUserID", id)
+
+	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) htmlLogoutUser(w http.ResponseWriter, r *http.Request) {
-
+	app.session.Remove(r, "authenticatedUserID")
+	app.session.Put(r, "flash", "You have logged out successfully")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {
