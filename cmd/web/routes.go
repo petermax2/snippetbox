@@ -8,17 +8,17 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-
 	defaultMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+	dynamicMiddleware := alice.New(app.session.Enable)
 
 	// HTTP message routing
 	router := mux.NewRouter()
 
 	// register HTML routes
-	router.HandleFunc("/", app.htmlHome).Methods("GET")
-	router.HandleFunc("/snippet/create", app.htmlCreateSnippetForm).Methods("GET")
-	router.HandleFunc("/snippet/create", app.htmlCreateSnippet).Methods("POST")
-	router.HandleFunc("/snippet/{id}", app.htmlShowSnippet).Methods("GET")
+	router.Handle("/", dynamicMiddleware.ThenFunc(app.htmlHome)).Methods("GET")
+	router.Handle("/snippet/create", dynamicMiddleware.ThenFunc(app.htmlCreateSnippetForm)).Methods("GET")
+	router.Handle("/snippet/create", dynamicMiddleware.ThenFunc(app.htmlCreateSnippet)).Methods("POST")
+	router.Handle("/snippet/{id}", dynamicMiddleware.ThenFunc(app.htmlShowSnippet)).Methods("GET")
 
 	// register API routes (JSON)
 	router.HandleFunc("/api/snippet/create", app.apiCreateSnippet).Methods("POST")

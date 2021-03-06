@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/golangcollege/sessions"
 	"nirpet.at/snippetbox/pkg/models"
 )
 
@@ -14,6 +16,7 @@ import (
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
+	session       *sessions.Session
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
 }
@@ -21,6 +24,7 @@ type application struct {
 func main() {
 	dbDSN := flag.String("dsn", DEFAULT_DSN, "DSN of the PostgreSQL database to connect to")
 	serverAddress := flag.String("address", ":8080", "Network address (and port) of the Snippetbox web server")
+	secret := flag.String("secret", "aishoifee*r?ekuk7Mee9Rahhu3juh/i", "Secret key to use for session management")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "[INFO]  ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -31,9 +35,13 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	session := sessions.New([]byte(*secret))
+	session.Lifetime = 8 * time.Hour
+
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
+		session:       session,
 		templateCache: templateCache,
 	}
 

@@ -94,6 +94,8 @@ func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	app.session.Put(r, "flash", "Snippet successfully created!")
+
 	// display created snippet to the user
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", snippet.ID), http.StatusSeeOther)
 }
