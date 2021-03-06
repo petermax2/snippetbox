@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gorilla/mux"
 	"nirpet.at/snippetbox/pkg/models"
@@ -52,15 +54,39 @@ func (app *application) htmlCreateSnippetForm(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request) {
+	// parse HTML form data
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+
+	// user input validation
+	validationErrors := make(map[string]string)
+
+	if strings.TrimSpace(title) == "" {
+		validationErrors["title"] = "This field can not be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		validationErrors["title"] = "This field is too long (maximum is 100 characters)"
+	}
+
+	if strings.TrimSpace(content) == "" {
+		validationErrors["content"] = "This field can not be blank"
+	}
+
 	expiresInDays, err := strconv.Atoi(r.PostForm.Get("expires"))
 	if err != nil || expiresInDays < 1 || expiresInDays > 365 {
-		app.clientError(w, http.StatusBadRequest)
+		validationErrors["expires"] = "This field must be a numeric value between 1 and 365"
+	}
+
+	if len(validationErrors) > 0 {
+		app.renderHtml(w, r, "create.page.tmpl", &templateData{
+			FormErrors: validationErrors,
+			FormData:   r.PostForm,
+		})
 		return
 	}
 
