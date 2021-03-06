@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"nirpet.at/snippetbox/pkg/models"
 )
 
@@ -24,7 +25,8 @@ func (app *application) htmlShowHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	urlParams := mux.Vars(r)
+	id, err := strconv.Atoi(urlParams["id"])
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -44,7 +46,8 @@ func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) apiGetSnippet(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	urlParams := mux.Vars(r)
+	id, err := strconv.Atoi(urlParams["id"])
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return

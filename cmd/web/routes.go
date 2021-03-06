@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 )
 
@@ -11,20 +12,20 @@ func (app *application) routes() http.Handler {
 	defaultMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 
 	// HTTP message routing
-	mux := http.NewServeMux()
+	router := mux.NewRouter().StrictSlash(true)
 
 	// register HTML routes
-	mux.HandleFunc("/", app.htmlShowHome)
-	mux.HandleFunc("/snippet", app.htmlShowSnippet)
+	router.HandleFunc("/", app.htmlShowHome).Methods("GET")
+	router.HandleFunc("/snippet/{id}", app.htmlShowSnippet).Methods("GET")
 
 	// register API routes (JSON)
-	mux.HandleFunc("/api/snippet", app.apiGetSnippet)
-	mux.HandleFunc("/api/snippet/create", app.apiCreateSnippet)
-	mux.HandleFunc("/api/snippet/latest", app.apiGetLatestSnippets)
+	router.HandleFunc("/api/snippet/{id}", app.apiGetSnippet).Methods("GET")
+	router.HandleFunc("/api/snippet/create", app.apiCreateSnippet).Methods("POST")
+	router.HandleFunc("/api/snippet/latest", app.apiGetLatestSnippets).Methods("GET")
 
 	// file server for static files
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	router.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return defaultMiddleware.Then(mux)
+	return defaultMiddleware.Then(router)
 }
