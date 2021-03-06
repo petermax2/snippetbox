@@ -46,7 +46,7 @@ func (app *application) htmlShowSnippet(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) htmlCreateSnippetForm(w http.ResponseWriter, r *http.Request) {
-
+	app.renderHtml(w, r, "create.page.tmpl", nil)
 }
 
 func (app *application) htmlCreateSnippet(w http.ResponseWriter, r *http.Request) {
