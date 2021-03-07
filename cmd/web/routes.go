@@ -15,8 +15,10 @@ func (app *application) routes() http.Handler {
 	// HTTP message routing
 	router := mux.NewRouter()
 
-	// register HTML routes (snippet)
 	router.Handle("/", dynamicMiddleware.ThenFunc(app.htmlHome)).Methods("GET")
+	router.HandleFunc("/ping", ping).Methods("GET")
+
+	// register HTML routes (snippet)
 	router.Handle("/snippet/create", authenticatedMiddleware.ThenFunc(app.htmlCreateSnippetForm)).Methods("GET")
 	router.Handle("/snippet/create", authenticatedMiddleware.ThenFunc(app.htmlCreateSnippet)).Methods("POST")
 	router.Handle("/snippet/{id}", dynamicMiddleware.ThenFunc(app.htmlShowSnippet)).Methods("GET")
