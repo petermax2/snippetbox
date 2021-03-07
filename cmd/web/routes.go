@@ -36,7 +36,7 @@ func (app *application) routes() http.Handler {
 
 	// file server for static files
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	router.Handle("/static/", http.StripPrefix("/static", fileServer))
+	router.PathPrefix("/static").Handler(http.StripPrefix("/static/", fileServer))
 
 	return defaultMiddleware.Then(router)
 }
