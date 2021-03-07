@@ -26,7 +26,7 @@ func (m *UserModel) Insert(user *User) error {
 	user.Active = true
 
 	tx := m.DB.Create(user)
-	if strings.Contains(tx.Error.Error(), "duplicate key") && strings.Contains(tx.Error.Error(), "email") {
+	if tx.Error != nil && strings.Contains(tx.Error.Error(), "duplicate key") && strings.Contains(tx.Error.Error(), "email") {
 		return ErrDuplicateEmail
 	}
 	return tx.Error
