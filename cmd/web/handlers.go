@@ -235,3 +235,7 @@ func (app *application) apiCreateSnippet(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(snippet)
 }
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "OK")
+}
