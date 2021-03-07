@@ -10,6 +10,7 @@ import (
 var ErrNoRecord = errors.New("models: no matching record found")
 var ErrInvalidCredentials = errors.New("models: invalid credentials")
 var ErrDuplicateEmail = errors.New("models: duplicate e-mail address")
+var ErrAccountDisabled = errors.New("models: account is not active")
 
 type Snippet struct {
 	gorm.Model

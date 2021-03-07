@@ -12,6 +12,10 @@ import (
 	"nirpet.at/snippetbox/pkg/models"
 )
 
+type contextKey string
+
+const ctxKeyIsAuthenticated = contextKey("isAuthenticated")
+
 // this struct holds application wide dependencies
 type application struct {
 	errorLog      *log.Logger

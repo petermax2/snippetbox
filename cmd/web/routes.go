@@ -9,7 +9,7 @@ import (
 
 func (app *application) routes() http.Handler {
 	defaultMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
-	dynamicMiddleware := alice.New(app.session.Enable, noSurf)
+	dynamicMiddleware := alice.New(app.session.Enable, noSurf, app.authenticate)
 	authenticatedMiddleware := dynamicMiddleware.Append(app.requireAuthentication)
 
 	// HTTP message routing

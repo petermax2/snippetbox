@@ -23,6 +23,7 @@ func (m *UserModel) Insert(user *User) error {
 		return err
 	}
 	user.Password = string(passwordHash)
+	user.Active = true
 
 	tx := m.DB.Create(user)
 	if strings.Contains(tx.Error.Error(), "duplicate key") && strings.Contains(tx.Error.Error(), "email") {
@@ -39,6 +40,10 @@ func (m *UserModel) Authenticate(email, password string) (uint, error) {
 		return 0, ErrInvalidCredentials
 	}
 
+	if !user.Active {
+		return 0, ErrAccountDisabled
+	}
+
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
@@ -51,6 +56,12 @@ func (m *UserModel) Authenticate(email, password string) (uint, error) {
 	return user.ID, nil
 }
 
-func (m *UserModel) Get(id int) (*User, error) {
-	return nil, nil
+func (m *UserModel) Get(id uint) (*User, error) {
+	user := &User{}
+	tx := m.DB.Limit(1).Find(&user, id)
+	if tx.RowsAffected < 1 && tx.Error == nil {
+		return nil, ErrNoRecord
+	}
+	user.Password = ""
+	return user, tx.Error
 }

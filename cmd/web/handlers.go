@@ -168,6 +168,9 @@ func (app *application) htmlLoginUser(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			form.Errors.Add("generic", "Your credentials are incorrect")
 			app.renderHtml(w, r, "login.page.tmpl", &templateData{Form: form})
+		} else if errors.Is(err, models.ErrAccountDisabled) {
+			form.Errors.Add("generic", "Your account has been disabled")
+			app.renderHtml(w, r, "login.page.tmpl", &templateData{Form: form})
 		} else {
 			app.serverError(w, err)
 		}
