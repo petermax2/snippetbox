@@ -26,7 +26,7 @@ func (f *Form) Required(fields ...string) {
 	for _, field := range fields {
 		value := f.Get(field)
 		if strings.TrimSpace(value) == "" {
-			f.Errors.Add(field, "This field can not be balnk")
+			f.Errors.Add(field, "This field can not be blank")
 		}
 	}
 }

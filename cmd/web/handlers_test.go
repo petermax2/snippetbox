@@ -105,14 +105,14 @@ func TestSignupE2E(t *testing.T) {
 		wantBody     []byte
 	}{
 		{"Valid submission", "Bob", "bob@example.com", "validPa$$word", csrfToken, http.StatusSeeOther, nil},
-		{"Empty name", "", "bob@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
-		{"Empty email", "Bob", "", "validPa$$word", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
-		{"Empty password", "Bob", "bob@example.com", "", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
+		{"Empty name", "", "bob@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field can not be blank")},
+		{"Empty email", "Bob", "", "validPa$$word", csrfToken, http.StatusOK, []byte("This field can not be blank")},
+		{"Empty password", "Bob", "bob@example.com", "", csrfToken, http.StatusOK, []byte("This field can not be blank")},
 		{"Invalid email (incomplete domain)", "Bob", "bob@example.", "validPa$$word", csrfToken, http.StatusOK, []byte("This field is invalid")},
 		{"Invalid email (missing @)", "Bob", "bobexample.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field is invalid")},
 		{"Invalid email (missing local part)", "Bob", "@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field is invalid")},
-		{"Short password", "Bob", "bob@example.com", "pa$$word", csrfToken, http.StatusOK, []byte("This field is too short (minimum is 10 characters)")},
-		{"Duplicate email", "Bob", "dupe@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("Address is already in use")},
+		{"Short password", "Bob", "bob@example.com", "pa$$word", csrfToken, http.StatusOK, []byte("This field is too short")},
+		{"Duplicate email", "Bob", "duplex@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("The e-maill address is already in use")},
 		{"Invalid CSRF Token", "", "", "", "wrongToken", http.StatusBadRequest, nil},
 	}
 
@@ -130,8 +130,9 @@ func TestSignupE2E(t *testing.T) {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
 			}
 
-			if !bytes.Contains(body, tt.wantBody) {
-				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			if tt.wantBody != nil && !bytes.Contains(body, tt.wantBody) {
+				//t.Log(string(body))
+				t.Errorf("want body to contain %q", tt.wantBody)
 			}
 		})
 	}
