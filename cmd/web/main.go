@@ -24,6 +24,7 @@ type application struct {
 	snippets      models.SnippetProvider
 	users         models.UserProvider
 	templateCache map[string]*template.Template
+	insecureCSRF  bool
 }
 
 func main() {
@@ -53,6 +54,7 @@ func main() {
 		infoLog:       infoLog,
 		session:       session,
 		templateCache: templateCache,
+		insecureCSRF:  false,
 	}
 
 	app.initModels(openDB(*dbDSN, errorLog))

@@ -54,13 +54,23 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 	})
 }
 
-func noSurf(next http.Handler) http.Handler {
+func (app *application) noSurf(next http.Handler) http.Handler {
 	handler := nosurf.New(next)
-	handler.SetBaseCookie(http.Cookie{
-		HttpOnly: true,
-		Path:     "/",
-		//Secure:   true, // TODO this prevents unit tests from passing
-	})
+	if app.insecureCSRF {
+		// secure CSRF cookie causes the unit tests to fail
+		// we disable the "Secure" flag for the tests
+		handler.SetBaseCookie(http.Cookie{
+			HttpOnly: true,
+			Path:     "/",
+			// Secure:   false,
+		})
+	} else {
+		handler.SetBaseCookie(http.Cookie{
+			HttpOnly: true,
+			Path:     "/",
+			Secure:   true,
+		})
+	}
 	return handler
 }
 

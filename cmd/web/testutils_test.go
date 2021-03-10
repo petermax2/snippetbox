@@ -33,6 +33,7 @@ func newTestApplication(t *testing.T) *application {
 		snippets:      &mock.SnippetModel{},
 		users:         &mock.UserModel{},
 		templateCache: templateCache,
+		insecureCSRF:  true,
 	}
 }
 
